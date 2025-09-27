@@ -11,15 +11,16 @@ class KafkaService {
     private val producer: KafkaProducer<String, String>
 
     init {
+        val kafkaBootstrapServers = System.getenv("KAFKA_BOOTSTRAP_SERVERS") ?: "localhost:9092"
         val props = Properties().apply {
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-            put(ProducerConfig.CLIENT_ID_CONFIG, "ktor-kafka-producer")
+            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers)
+            put(ProducerConfig.CLIENT_ID_CONFIG, "ktor-kafka-producer") // identifier for this producer, helps with logs/metrics
             put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
             put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-            put(ProducerConfig.ACKS_CONFIG, "all")
+            put(ProducerConfig.ACKS_CONFIG, "all") // how many brokers need to acknowledge a write before success
             put(ProducerConfig.RETRIES_CONFIG, 3)
-            put(ProducerConfig.LINGER_MS_CONFIG, 1)
-            put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
+            put(ProducerConfig.LINGER_MS_CONFIG, 1000)  // how long to wait before sending a batch of messages even if batch isn't filled
+            put(ProducerConfig.BATCH_SIZE_CONFIG, 8192)  // size of batch per send
         }
 
         producer = KafkaProducer(props)

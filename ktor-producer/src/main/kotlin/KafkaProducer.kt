@@ -22,7 +22,7 @@ fun Application.configureKafkaProducer() {
     routing {
         post("/produce") {
             val eventMessage = call.receive<EventMessage>()
-            val messageJson = Json.encodeToString(EventMessage.serializer(), eventMessage)
+            val messageJson = Json.encodeToString(eventMessage)
 
             val metadata = kafkaService.sendMessage("test-events", eventMessage.id, messageJson)
 

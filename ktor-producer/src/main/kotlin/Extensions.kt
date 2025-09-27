@@ -5,16 +5,15 @@ import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
-import kotlin.coroutines.resumeWithException
 
-suspend inline fun <reified K : Any, reified V : Any> KafkaProducer<K, V>.dispatch(
+suspend fun <K : Any, V : Any> KafkaProducer<K, V>.dispatch(
     record: ProducerRecord<K, V>
 ): RecordMetadata = suspendCancellableCoroutine { continuation ->
     val callback = Callback { metadata, exception ->
         when {
-            exception != null -> continuation.resumeWithException(exception)
-            metadata != null -> continuation.resume(metadata)
-            else -> continuation.resumeWithException(RuntimeException("Unknown error occurred"))
+            exception != null -> continuation.resumeWith(Result.failure(exception))
+            metadata != null -> continuation.resumeWith(Result.success(metadata))
+            else -> continuation.resumeWith(Result.failure(RuntimeException("Unknown error occurred")))
         }
     }
 
