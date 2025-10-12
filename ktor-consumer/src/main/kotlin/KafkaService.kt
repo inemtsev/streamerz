@@ -25,7 +25,7 @@ class KafkaService(private val scope: CoroutineScope) {
     private val messagesProcessed = AtomicLong(0)
     private var lastProcessedTime = 0L
     private var isRunning = false
-    
+
     private val outputFile = File("kafka_messages.log")
     private var fileWriter: BufferedWriter? = null
 
@@ -46,19 +46,19 @@ class KafkaService(private val scope: CoroutineScope) {
     }
 
     fun startConsuming(topic: String) {
-        if(isRunning) return
+        if (isRunning) return
 
         scope.launch {
             isRunning = true
             consumer.subscribe(listOf(topic))
-            
+
             fileWriter = BufferedWriter(FileWriter(outputFile, true))
 
             try {
                 while (isActive && isRunning) {
                     val records = consumer.poll(Duration.ofMillis(100))
 
-                    if(records.count() > 0) {
+                    if (records.count() > 0) {
                         processRecords(records)
                     }
                 }
@@ -84,7 +84,7 @@ class KafkaService(private val scope: CoroutineScope) {
         }
 
         consumer.commitAsync { offsets, exception ->
-            if(exception != null) {
+            if (exception != null) {
                 println("Error while committing offsets: ${exception.message}")
             } else {
                 println("Offsets committed successfully, no: ${offsets.count()}")
@@ -92,12 +92,11 @@ class KafkaService(private val scope: CoroutineScope) {
         }
     }
 
-    private suspend fun processMessage(record: ConsumerRecord<String, String>) {
-        withContext(Dispatchers.IO) {
-            val eventsMessage = Json.decodeFromString<EventMessage>(record.value())
-            val currentTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            
-            val logEntry = """
+    private fun processMessage(record: ConsumerRecord<String, String>) {
+        val eventsMessage = Json.decodeFromString<EventMessage>(record.value())
+        val currentTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+        val logEntry = """
                 $currentTime | Topic: ${record.topic()} | Partition: ${record.partition()} | Offset: ${record.offset()} | Key: ${record.key() ?: "null"} | Message: {
                   id=${eventsMessage.id}, 
                   timestamp=${eventsMessage.timestamp}, 
@@ -105,15 +104,14 @@ class KafkaService(private val scope: CoroutineScope) {
                   source="${eventsMessage.source}"
                 }
             """.trimIndent()
-            
-            fileWriter?.let { writer ->
-                writer.write(logEntry)
-                writer.newLine()
-                writer.flush()
-            }
 
-            println("Message processed and logged: ${eventsMessage.id}")
+        fileWriter?.let { writer ->
+            writer.write(logEntry)
+            writer.newLine()
+            writer.flush()
         }
+
+        println("Message processed and logged: ${eventsMessage.id}")
     }
 
     fun getStats() = ConsumerStats(
@@ -122,7 +120,7 @@ class KafkaService(private val scope: CoroutineScope) {
         lastProcessedTime = lastProcessedTime
     )
 
-    fun stop() { 
+    fun stop() {
         isRunning = false
         fileWriter?.close()
         fileWriter = null
