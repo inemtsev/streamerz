@@ -39,7 +39,7 @@ class KafkaService(private val scope: CoroutineScope) {
             put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
             put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
             put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false)
-            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100)
+            put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100) // max number of messages/records in one poll
         }
 
         consumer = KafkaConsumer(props)

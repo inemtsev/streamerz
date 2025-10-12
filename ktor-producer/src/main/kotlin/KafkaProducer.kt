@@ -37,6 +37,40 @@ fun Application.configureKafkaProducer() {
             application.log.info("Sent message to partition ${metadata.partition()} with offset ${metadata.offset()}")
         }
 
+        post("/produce-fire-and-forget") {
+            val eventMessage = call.receive<EventMessage>()
+            val messageJson = Json.encodeToString(eventMessage)
+
+            kafkaService.sendMessageFireAndForget("test-events", eventMessage.id, messageJson)
+
+            call.respond(
+                HttpStatusCode.OK,
+                ProduceResponse(
+                    success = true,
+                    messageId = eventMessage.id
+                )
+            )
+
+            application.log.info("Sent message (fire-and-forget) with id ${eventMessage.id}")
+        }
+
+        post("/produce-multiple") {
+            val eventMessage = call.receive<EventMessage>()
+            val messageJson = Json.encodeToString(eventMessage)
+
+            kafkaService.sendMultipleMessages("test-events", eventMessage.id, messageJson)
+
+            call.respond(
+                HttpStatusCode.OK,
+                ProduceResponse(
+                    success = true,
+                    messageId = eventMessage.id
+                )
+            )
+
+            application.log.info("Sent message (fire-and-forget) with id ${eventMessage.id}")
+        }
+
         get("/health") {
             call.respond(HttpStatusCode.OK, "OK")
         }

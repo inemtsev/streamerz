@@ -22,3 +22,4 @@ suspend fun <K : Any, V : Any> KafkaProducer<K, V>.dispatch(
         future.cancel(true)
     }
 }
+
