@@ -13,7 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 fun Application.configureKafkaConsumer() {
-    val consumerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val consumerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     val kafkaService = KafkaService(consumerScope)
 
     // Start consuming immediately when the application starts

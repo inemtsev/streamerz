@@ -72,7 +72,7 @@ class KafkaService(private val scope: CoroutineScope) {
         }
     }
 
-    private suspend fun processRecords(records: ConsumerRecords<String, String>) {
+    private fun processRecords(records: ConsumerRecords<String, String>) {
         records.forEach { record ->
             try {
                 processMessage(record)
